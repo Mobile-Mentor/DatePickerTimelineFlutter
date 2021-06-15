@@ -17,6 +17,7 @@ class DateWidget extends StatelessWidget {
   final DateSelectionCallback? onDateSelected;
   final String? locale;
   final bool showBorder;
+  final BoxBorder? currentDateBorderStyle;
 
   DateWidget({
     required this.date,
@@ -25,6 +26,7 @@ class DateWidget extends StatelessWidget {
     required this.dateTextStyle,
     required this.selectionColor,
     this.showBorder = false,
+    this.currentDateBorderStyle,
     this.width,
     this.onDateSelected,
     this.locale,
@@ -38,7 +40,7 @@ class DateWidget extends StatelessWidget {
         margin: EdgeInsets.all(3.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(8.0)),
-          border: showBorder ? Border.all(color: Colors.white) : null,
+          border: showBorder ? currentDateBorderStyle ?? Border.all(color: Colors.white) : null,
           color: selectionColor,
         ),
         child: Padding(

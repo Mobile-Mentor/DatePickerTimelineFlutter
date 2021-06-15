@@ -58,6 +58,8 @@ class DatePicker extends StatefulWidget {
   /// Locale for the calendar default: en_us
   final String locale;
 
+  final BoxBorder? currentDateBorderStyle;
+
   DatePicker(this.startDate, {
     Key? key,
     this.width = 60,
@@ -75,6 +77,7 @@ class DatePicker extends StatefulWidget {
     this.daysCount = 500,
     this.onDateChange,
     this.locale = "en_US",
+    this.currentDateBorderStyle,
   }) : assert(
   activeDates == null || inactiveDates == null,
   "Can't "
@@ -174,7 +177,7 @@ class _DatePickerState extends State<DatePicker> {
           _currentDate != null ? _compareDate(date, _currentDate!) : false;
 
           final now = DateTime.now();
-          bool isCurrentDate = date == DateTime(now.year, now.month, now.day);
+          bool isCurrentDate = _compareDate(date, now);
 
           // Return the Date Widget
           return DateWidget(
@@ -199,6 +202,7 @@ class _DatePickerState extends State<DatePicker> {
             selectionColor:
             isSelected ? widget.selectionColor : Colors.transparent,
             showBorder: isCurrentDate,
+            currentDateBorderStyle: widget.currentDateBorderStyle,
             onDateSelected: (selectedDate) {
               // Don't notify listener if date is deactivated
               if (isDeactivated) return;
