@@ -71,6 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   initialSelectedDate: DateTime.now(),
                   selectionColor: Colors.black,
                   selectedTextColor: Colors.white,
+                  datePickerAccent: Colors.red,
                   onDateChange: (date) {
                     // New date selected
                     setState(() {
