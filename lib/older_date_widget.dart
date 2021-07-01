@@ -1,0 +1,56 @@
+import 'package:date_picker_timeline/gestures/tap.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+class OlderDateWidget extends StatelessWidget {
+  final double? width;
+  final TextStyle textStyle;
+  final Color selectionColor;
+  final Function(DateTime) onSelected;
+  final String title;
+  final DateTime datePickerInitialDate;
+  final DateTime datePickerFirstDate;
+  final DateTime datePickerLastDate;
+
+  OlderDateWidget({
+    required this.textStyle,
+    required this.selectionColor,
+    required this.onSelected,
+    required this.title,
+    required this.datePickerInitialDate,
+    required this.datePickerFirstDate,
+    required this.datePickerLastDate,
+    this.width,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+        child: Container(
+          width: width,
+          margin: EdgeInsets.all(3.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(8.0)),
+            border: Border.all(color: Colors.white),
+            color: selectionColor,
+          ),
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.all(8),
+              child: Text(title, style: textStyle, textAlign: TextAlign.center),
+            ),
+          ),
+        ),
+        onTap: () async {
+          final selectedDate = await showDatePicker(
+              context: context,
+              initialDate: datePickerInitialDate,
+              firstDate: datePickerFirstDate,
+              lastDate: datePickerLastDate);
+
+          if (selectedDate != null) {
+            onSelected(selectedDate);
+          }
+        });
+  }
+}
