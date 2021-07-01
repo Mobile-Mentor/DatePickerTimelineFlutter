@@ -1,6 +1,4 @@
-import 'package:date_picker_timeline/gestures/tap.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 class OlderDateWidget extends StatelessWidget {
   final double? width;
