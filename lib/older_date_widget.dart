@@ -5,22 +5,16 @@ class OlderDateWidget extends StatelessWidget {
   final TextStyle textStyle;
   final Color selectionColor;
   final Function(DateTime) onSelected;
+  final Function showPopUpDatePicker;
   final String title;
-  final DateTime datePickerInitialDate;
-  final DateTime datePickerFirstDate;
-  final DateTime datePickerLastDate;
-  final Color? datePickerAccent;
 
   OlderDateWidget({
     required this.textStyle,
     required this.selectionColor,
     required this.onSelected,
     required this.title,
-    required this.datePickerInitialDate,
-    required this.datePickerFirstDate,
-    required this.datePickerLastDate,
+    required this.showPopUpDatePicker,
     this.width,
-    this.datePickerAccent,
   });
 
   @override
@@ -42,22 +36,8 @@ class OlderDateWidget extends StatelessWidget {
         ),
       ),
       onTap: () async {
-        final selectedDate = await showDatePicker(
-            builder: (context, child) {
-              return Theme(
-                data: ThemeData.light().copyWith(
-                  primaryColor: datePickerAccent ?? Theme.of(context).primaryColor,
-                  accentColor: datePickerAccent ?? Theme.of(context).accentColor,
-                  colorScheme: ColorScheme.light(primary: datePickerAccent ?? Theme.of(context).accentColor),
-                  buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
-                ),
-                child: child!,
-              );
-            },
-            context: context,
-            initialDate: datePickerInitialDate,
-            firstDate: datePickerFirstDate,
-            lastDate: datePickerLastDate);
+
+        final selectedDate = await showPopUpDatePicker();
 
         if (selectedDate != null) {
           onSelected(selectedDate);

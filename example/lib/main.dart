@@ -28,6 +28,7 @@ class _MyHomePageState extends State<MyHomePage> {
   DatePickerController _controller = DatePickerController();
 
   DateTime _selectedValue = DateTime.now();
+  DateTime startDate = DateTime.now().subtract(Duration(days: 21));
 
   @override
   void initState() {
@@ -62,8 +63,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               Container(
                 child: DatePicker(
-                  DateTime.now()
-                      .subtract(Duration(days: 21)),
+                  DateTime.now().subtract(Duration(days: 21)),
                   width: 60,
                   height: 80,
                   daysCount: 22,
@@ -71,23 +71,55 @@ class _MyHomePageState extends State<MyHomePage> {
                   initialSelectedDate: DateTime.now(),
                   selectionColor: Colors.black,
                   selectedTextColor: Colors.white,
-                  datePickerAccent: Colors.red,
                   onDateChange: (date) {
                     // New date selected
                     setState(() {
                       _selectedValue = date;
                     });
                   },
-                  includeOlderThanDatePicker: true,
-                  datePickerInitialDate: DateTime.now()
-                      .subtract(Duration(days: 21)),
-                  datePickerFirstDate: DateTime.now().subtract(Duration(days: 365)),
-                  datePickerLastDate: DateTime.now()
-                      .subtract(Duration(days: 21)),
+                  showPopUpDatePicker: () => _showPopUpDatePicker(),
                 ),
               ),
             ],
           ),
         ));
+  }
+
+  Future<DateTime?> _showPopUpDatePicker() async {
+    final selectedDate = await showDatePicker(
+        builder: (context, child) {
+          return Theme(
+            data: ThemeData.light().copyWith(
+              primaryColor: Theme.of(context).primaryColor,
+              accentColor: Theme.of(context).accentColor,
+              colorScheme: ColorScheme.light(primary: Theme.of(context).accentColor),
+              buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
+            ),
+            child: child!,
+          );
+        },
+        context: context,
+        initialDate: _getInitialDate(_selectedValue),
+        firstDate: DateTime.now().subtract(Duration(days: 365)),
+        lastDate: startDate);
+
+    if (selectedDate != null) {
+      // New date selected
+      setState(() {
+        _selectedValue = selectedDate;
+      });
+    }
+
+    return selectedDate;
+  }
+
+  DateTime _getInitialDate(DateTime? selectedDate) {
+    if (selectedDate == null) {
+      return startDate;
+    } else if (selectedDate.isAfter(startDate)) {
+      return startDate;
+    } else {
+      return selectedDate;
+    }
   }
 }

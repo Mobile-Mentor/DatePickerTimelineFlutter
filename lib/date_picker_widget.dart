@@ -61,14 +61,8 @@ class DatePicker extends StatefulWidget {
 
   final BoxBorder? currentDateBorderStyle;
 
-  /// Dates for the date older than x days date picker
-  final DateTime? datePickerInitialDate;
-  final DateTime? datePickerLastDate;
-  final DateTime? datePickerFirstDate;
-
-  final bool includeOlderThanDatePicker;
-
-  final Color? datePickerAccent;
+  /// Show date dialog picker function. If null the older than x days widget will not be present
+  final Function? showPopUpDatePicker;
 
   DatePicker(this.startDate,
       {Key? key,
@@ -88,11 +82,7 @@ class DatePicker extends StatefulWidget {
       this.onDateChange,
       this.locale = "en_US",
       this.currentDateBorderStyle,
-      this.datePickerInitialDate,
-      this.datePickerLastDate,
-      this.datePickerFirstDate,
-      this.includeOlderThanDatePicker = false,
-      this.datePickerAccent})
+      this.showPopUpDatePicker})
       : assert(
             activeDates == null || inactiveDates == null,
             "Can't "
@@ -124,6 +114,19 @@ class _DatePickerState extends State<DatePicker> {
 
     if (widget.controller != null) {
       widget.controller!.setDatePickerState(this);
+
+      WidgetsBinding.instance?.addPostFrameCallback((_) {
+        if (_currentDate == null) {
+          // Start view at today's date if there is no date selected
+          _controller.jumpTo(_controller.position.maxScrollExtent);
+        } else if (_isOlderDateSelected()) {
+          // Start view at [older_date_widget] if the date selected is older than shown in the timeline
+          _controller.jumpTo(_controller.position.minScrollExtent);
+        } else {
+          // Else start view at current selection in the timeline
+          widget.controller!.jumpToSelection();
+        }
+      });
     }
 
     this.selectedDateStyle = widget.dateTextStyle.copyWith(color: widget.selectedTextColor);
@@ -134,27 +137,12 @@ class _DatePickerState extends State<DatePicker> {
     this.deactivatedMonthStyle = widget.monthTextStyle.copyWith(color: widget.deactivatedColor);
     this.deactivatedDayStyle = widget.dayTextStyle.copyWith(color: widget.deactivatedColor);
 
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
-      _controller.jumpTo(_controller.position.maxScrollExtent);
-    });
-
     // Setup the start of list swipe life listener to show the date picker.
-    if (widget.includeOlderThanDatePicker) {
+    if (widget.showPopUpDatePicker != null) {
       _controller.addListener(() async {
         if (_controller.position.atEdge) {
           if (_controller.position.pixels == 0) {
-            final selectedDate = await showDatePicker(
-                context: context,
-                initialDate: widget.datePickerInitialDate!,
-                firstDate: widget.datePickerFirstDate!,
-                lastDate: widget.datePickerLastDate!);
-
-            if (selectedDate != null) {
-              // A date is selected
-              if (widget.onDateChange != null) {
-                widget.onDateChange!(selectedDate);
-              }
-            }
+            final selectedDate = await widget.showPopUpDatePicker!();
 
             setState(() {
               _currentDate = selectedDate;
@@ -176,32 +164,20 @@ class _DatePickerState extends State<DatePicker> {
         scrollDirection: Axis.horizontal,
         controller: _controller,
         itemBuilder: (context, index) {
-          if (widget.includeOlderThanDatePicker && index == 0) {
-            final isOlderDateSelected = _currentDate != null
-                ? _currentDate!.isBefore(widget.startDate)
-                    ? true
-                    : false
-                : false;
+          if (widget.showPopUpDatePicker != null && index == 0) {
+            final isOlderDateSelected = _isOlderDateSelected();
 
             return OlderDateWidget(
               textStyle: isOlderDateSelected ? selectedDayStyle : widget.dayTextStyle,
               selectionColor: isOlderDateSelected ? widget.selectionColor : Colors.transparent,
-              datePickerAccent: widget.datePickerAccent,
               width: widget.width,
               onSelected: (DateTime selectedDate) {
-                // A date is selected
-                if (widget.onDateChange != null) {
-                  widget.onDateChange!(selectedDate);
-                }
-
                 setState(() {
                   _currentDate = selectedDate;
                 });
               },
+              showPopUpDatePicker: widget.showPopUpDatePicker!,
               title: 'Older than ${widget.daysCount} days',
-              datePickerInitialDate: widget.datePickerInitialDate!,
-              datePickerLastDate: widget.datePickerLastDate!,
-              datePickerFirstDate: widget.datePickerFirstDate!,
             );
           } else {
             // get the date object based on the index position
@@ -281,6 +257,14 @@ class _DatePickerState extends State<DatePicker> {
         },
       ),
     );
+  }
+
+  bool _isOlderDateSelected() {
+    return _currentDate != null
+        ? _currentDate!.isBefore(widget.startDate)
+            ? true
+            : false
+        : false;
   }
 
   /// Helper function to compare two dates
